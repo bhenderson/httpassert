@@ -1,3 +1,7 @@
+// Package httpassert is a simple wrapper around httptest.Server
+//
+// It provides convenience methods for setting up routes and asserting that
+// only the specified routes were called.
 package httpassert
 
 import (
@@ -67,6 +71,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.Expect(ec)
 }
 
+// Assert checks that the correct number of expected calls was made
 func (s *Server) Assert(t testing.TB) bool {
 	t.Helper()
 	pass := true
@@ -95,6 +100,7 @@ func (s *Server) Close() {
 	s.Server.Close()
 }
 
+// Expects adds an ExpectedCall to available calls
 func (s *Server) Expect(ec ExpectedCall) {
 	s.m.Lock()
 	defer s.m.Unlock()
@@ -102,14 +108,14 @@ func (s *Server) Expect(ec ExpectedCall) {
 	s.ExpectedCalls = append(s.ExpectedCalls, ec)
 }
 
-func NewCall(m, p string, h http.Handler) ExpectedCall {
-	return ExpectedCall{
-		Method:  m,
-		Path:    p,
-		Handler: h,
-	}
-}
-
+// ExpectedCall sets up simple Method and route prefix checking. Any advanced
+// checks should be done in the handler.
+//	h := func(w http.ResponseWriter, r *http.Request) {
+//		if r.Path != "/users/123" {
+//			t.FailNow()
+//		}
+//	}
+// 	s.Expect(ExpectedCall{Method: "GET", Path: "/users", Calls: 1, Handler: h})
 type ExpectedCall struct {
 	Method  string
 	Path    string
@@ -124,6 +130,7 @@ func (ec *ExpectedCall) Match(r *http.Request) bool {
 	return ec.Method == r.Method && strings.HasPrefix(r.URL.Path, ec.Path)
 }
 
+// ServeHTTP implements http.Handler
 func (ec *ExpectedCall) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h := ec.Handler
 	if h == nil {
