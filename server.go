@@ -13,7 +13,7 @@ import (
 )
 
 // NotFound can be rewritten to return a different status code or other behavior
-var NotFound http.Handler = http.HandlerFunc(http.NotFound)
+var NotFound http.HandlerFunc = http.NotFound
 
 var testServers []*Server
 
