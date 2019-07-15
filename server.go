@@ -36,6 +36,7 @@ type Server struct {
 	Name          string
 	Server        *httptest.Server
 	ExpectedCalls []ExpectedCall
+	middleware    []Middleware
 
 	m sync.Mutex
 }
@@ -55,8 +56,20 @@ func New(name string, url *string) *Server {
 	return s
 }
 
+func (s *Server) Use(ms ...Middleware) {
+	s.middleware = append(s.middleware, ms...)
+}
+
 // ServeHTTP implements http.Handler
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var h http.Handler = http.HandlerFunc(s.serveHTTP)
+	for i := len(s.middleware); i > 0; i-- {
+		h = s.middleware[i-1](h)
+	}
+	h.ServeHTTP(w, r)
+}
+
+func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request) {
 	for i := range s.ExpectedCalls {
 		if s.ExpectedCalls[i].Match(r) {
 			s.ExpectedCalls[i].ServeHTTP(w, r)
@@ -148,3 +161,5 @@ func (ec *ExpectedCall) Increment(i int) {
 
 	ec.Calls += i
 }
+
+type Middleware func(http.Handler) http.Handler
