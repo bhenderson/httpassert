@@ -26,6 +26,7 @@ func Assert(t testing.TB) bool {
 	for _, s := range testServers {
 		pass = s.Assert(t) && pass
 	}
+	testServers = nil
 	return pass
 }
 
