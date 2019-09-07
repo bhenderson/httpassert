@@ -125,12 +125,6 @@ func (s *Server) Expect(ec *ExpectedCall) {
 
 // ExpectedCall sets up simple Method and route prefix checking. Any advanced
 // checks should be done in the handler.
-//	h := func(w http.ResponseWriter, r *http.Request) {
-//		if r.Path != "/users/123" {
-//			t.FailNow()
-//		}
-//	}
-// 	s.Expect(&ExpectedCall{Method: "GET", Path: "/users", Calls: 1, Handler: h})
 type ExpectedCall struct {
 	Method  string
 	Path    string

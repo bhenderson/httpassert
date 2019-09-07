@@ -103,3 +103,14 @@ func TestServer(t *testing.T) {
 		assertExpectedCalls(t, nil, ht.errors)
 	})
 }
+
+func ExampleExpectedCall() {
+	var t *testing.T
+	var s *Server
+	h := func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/users/123" {
+			t.FailNow()
+		}
+	}
+	s.Expect(&ExpectedCall{Method: "GET", Path: "/users", Calls: 1, Handler: http.HandlerFunc(h)})
+}
