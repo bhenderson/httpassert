@@ -36,7 +36,7 @@ func Assert(t testing.TB) bool {
 type Server struct {
 	Name          string
 	Server        *httptest.Server
-	ExpectedCalls []ExpectedCall
+	ExpectedCalls []*ExpectedCall
 	middleware    []Middleware
 
 	m sync.Mutex
@@ -57,6 +57,7 @@ func New(name string, url *string) *Server {
 	return s
 }
 
+// Use adds middleware wrapping the server.
 func (s *Server) Use(ms ...Middleware) {
 	s.middleware = append(s.middleware, ms...)
 }
@@ -77,7 +78,7 @@ func (s *Server) serveHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	ec := ExpectedCall{
+	ec := &ExpectedCall{
 		Method: r.Method,
 		Path:   r.URL.Path,
 	}
@@ -114,8 +115,8 @@ func (s *Server) Close() {
 	s.Server.Close()
 }
 
-// Expects adds an ExpectedCall to available calls
-func (s *Server) Expect(ec ExpectedCall) {
+// Expect adds an ExpectedCall to available calls
+func (s *Server) Expect(ec *ExpectedCall) {
 	s.m.Lock()
 	defer s.m.Unlock()
 
@@ -129,7 +130,7 @@ func (s *Server) Expect(ec ExpectedCall) {
 //			t.FailNow()
 //		}
 //	}
-// 	s.Expect(ExpectedCall{Method: "GET", Path: "/users", Calls: 1, Handler: h})
+// 	s.Expect(&ExpectedCall{Method: "GET", Path: "/users", Calls: 1, Handler: h})
 type ExpectedCall struct {
 	Method  string
 	Path    string
@@ -163,4 +164,5 @@ func (ec *ExpectedCall) Increment(i int) {
 	ec.Calls += i
 }
 
+// Middleware is a convenience type
 type Middleware func(http.Handler) http.Handler

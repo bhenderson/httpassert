@@ -60,10 +60,10 @@ func TestServer(t *testing.T) {
 	)
 	s := New("testserver", &u)
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		called += 1
+		called++
 	})
-	s.Expect(ExpectedCall{Method: "GET", Path: "/endpoint", Calls: 1, Handler: h})
-	s.Expect(ExpectedCall{Method: "PATCH", Path: "/missed", Calls: 2})
+	s.Expect(&ExpectedCall{Method: "GET", Path: "/endpoint", Calls: 1, Handler: h})
+	s.Expect(&ExpectedCall{Method: "PATCH", Path: "/missed", Calls: 2})
 
 	r, err := http.Get(u + "/endpoint")
 	assertResponse(t, 200, r, err)
@@ -93,7 +93,7 @@ func TestServer(t *testing.T) {
 		)
 		s := New("testserver", &u)
 
-		s.Expect(ExpectedCall{Method: "GET", Path: "/", Calls: 1})
+		s.Expect(&ExpectedCall{Method: "GET", Path: "/", Calls: 1})
 
 		r, err := http.Get(u)
 		assertResponse(t, 404, r, err)
